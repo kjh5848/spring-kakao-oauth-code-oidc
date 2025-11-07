@@ -1,4 +1,4 @@
-package com.metacoding.spring_oauth.user;
+package com.metacoding.spring_oauth_oidc.user;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -10,11 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import com.metacoding.spring_oauth._core.utils.JwtUtil;
-import com.metacoding.spring_oauth._core.utils.KakaoApiClient;
-import com.metacoding.spring_oauth._core.utils.KakaoOidcUtil;
+import com.metacoding.spring_oauth_oidc._core.utils.JwtUtil;
+import com.metacoding.spring_oauth_oidc._core.utils.KakaoApiClient;
+import com.metacoding.spring_oauth_oidc._core.utils.KakaoOidcUtil;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final HttpSession session;
     private final KakaoOidcUtil kakaoOidcUtil;
     private final RestTemplate restTemplate = new RestTemplate();
     private final KakaoApiClient kakaoApiClient;
@@ -65,17 +63,14 @@ public class UserService {
 
     /**
      * 카카오 로그인 URL 생성
+     * 
+     * 예시)
      * https://accounts.kakao.com/login/?continue=https%3A%2F%2Fkauth.kakao.com%2Foauth%2Fauthorize%3Fresponse_type%3Dcode%26
      * client_id%3D200429b30f3909ea3fd28224cddc7b25%26
      * redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A8080%252Foauth%252Fcallback%26
      * scope%3Dopenid%2520profile_nickname%26
-     * nonce%3D803e2c8a-d8de-46a8-a041-de79d9239414%26through_account%3Dtrue%26auth_tran_id%3DB0cy56socnB3yeZ71vyeJHsf0Vz4fWvX7RipoW2PChcQbwAAAZpceK4-#login
      */
     public String 카카오로그인주소() {
-
-        // nonce: 1회성 검증 키, 검증하고 나면 반드시 삭제해야 한다.
-        String nonce = UUID.randomUUID().toString();
-        session.setAttribute("kakao_nonce", nonce); // 서버 세션에 저장
 
         String encodedRedirect = URLEncoder.encode(kakaoRedirectUri, StandardCharsets.UTF_8);
         String scope = URLEncoder.encode("openid profile_nickname", StandardCharsets.UTF_8);
@@ -83,8 +78,7 @@ public class UserService {
                 + "?response_type=code"
                 + "&client_id=" + kakaoClientId
                 + "&redirect_uri=" + encodedRedirect
-                + "&scope=" + scope
-                + "&nonce=" + nonce;
+                + "&scope=" + scope;
     }
 
     /**
@@ -98,17 +92,11 @@ public class UserService {
             throw new RuntimeException("카카오 Access Token 발급에 실패했습니다.");
         }
 
-        // 세션에서 내가 요청 시 저장한 nonce 꺼내기
-        String sessionNonce = (String) session.getAttribute("kakao_nonce");
-
         // OIDC 검증
-        KakaoOidcResponse resDTO = kakaoOidcUtil.verify(tokenDTO.idToken(), sessionNonce);
+        KakaoOidcResponse resDTO = kakaoOidcUtil.verify(tokenDTO.idToken());
         if (resDTO == null || resDTO.subject() == null) {
             throw new RuntimeException("카카오 OIDC id_token 검증 실패");
         }
-
-        // 검증 완료 시 nonce 제거
-        session.removeAttribute("kakao_nonce");
 
         User user = 카카오사용자보장(resDTO.subject(), resDTO.nickname(), null);
 

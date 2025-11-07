@@ -1,4 +1,4 @@
-package com.metacoding.spring_oauth.post;
+package com.metacoding.spring_oauth_oidc.post;
 
 import java.util.List;
 

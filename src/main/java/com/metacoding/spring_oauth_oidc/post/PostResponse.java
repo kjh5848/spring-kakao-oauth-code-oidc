@@ -1,4 +1,4 @@
-package com.metacoding.spring_oauth.post;
+package com.metacoding.spring_oauth_oidc.post;
 
 import java.time.format.DateTimeFormatter;
 
@@ -12,9 +12,7 @@ public class PostResponse {
                     post.getId(),
                     post.getTitle(),
                     post.getUser().getUsername(),
-                    post.getCreatedAt() != null ? post.getCreatedAt().format(FORMATTER) : ""
-            );
+                    post.getCreatedAt() != null ? post.getCreatedAt().format(FORMATTER) : "");
         }
     }
 }
-

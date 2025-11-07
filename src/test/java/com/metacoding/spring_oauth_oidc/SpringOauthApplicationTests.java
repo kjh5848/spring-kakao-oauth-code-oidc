@@ -1,4 +1,4 @@
-package com.metacoding.spring_oauth;
+package com.metacoding.spring_oauth_oidc;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

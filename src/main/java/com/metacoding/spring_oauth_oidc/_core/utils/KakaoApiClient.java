@@ -1,4 +1,4 @@
-package com.metacoding.spring_oauth._core.utils;
+package com.metacoding.spring_oauth_oidc._core.utils;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -10,7 +10,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import com.metacoding.spring_oauth.user.KakaoResponse;
+import com.metacoding.spring_oauth_oidc.user.KakaoResponse;
 
 @Component
 public class KakaoApiClient {

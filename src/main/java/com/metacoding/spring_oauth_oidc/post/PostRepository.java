@@ -1,4 +1,4 @@
-package com.metacoding.spring_oauth.post;
+package com.metacoding.spring_oauth_oidc.post;
 
 import java.util.List;
 
@@ -10,4 +10,3 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("select p from Post p join fetch p.user order by p.id desc")
     List<Post> findAllWithUser();
 }
-

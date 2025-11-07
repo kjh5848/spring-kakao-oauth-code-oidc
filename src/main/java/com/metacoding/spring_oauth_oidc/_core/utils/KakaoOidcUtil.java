@@ -1,15 +1,12 @@
-package com.metacoding.spring_oauth._core.utils;
+package com.metacoding.spring_oauth_oidc._core.utils;
 
 import java.net.URI;
 import java.text.ParseException;
-import java.time.Instant;
-import java.util.Date;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.metacoding.spring_oauth.user.KakaoOidcResponse;
+import com.metacoding.spring_oauth_oidc.user.KakaoOidcResponse;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.JWK;
@@ -28,20 +25,12 @@ public class KakaoOidcUtil {
     private String kakaoClientId;
 
     @Value("${kakao.oidc-jwks-uri}")
-    private String jwksUri;
-
-    /**
-     * 문자열 클레임 추출
-     */
-    private String getStringClaim(JWTClaimsSet claims, String name) throws ParseException {
-        Object value = claims.getClaim(name);
-        return value instanceof String ? (String) value : null;
-    }
+    private String kakaoOidcJwksUri;
 
     /**
      * 🔒 카카오 OIDC 토큰 검증 전체 처리
      */
-    public KakaoOidcResponse verify(String idToken, String sessionNonce) {
+    public KakaoOidcResponse verify(String idToken) {
         if (idToken == null || idToken.isBlank()) {
             throw new RuntimeException("id_token 값이 비어 있습니다.");
         }
@@ -61,14 +50,11 @@ public class KakaoOidcUtil {
             // 클레임 추출
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
 
-            // OIDC 표준 검증
-            validateClaims(claims, sessionNonce);
-
             // 검증 완료 후 응답 생성
             return new KakaoOidcResponse(
                     claims.getSubject(),
-                    getStringClaim(claims, "nickname"),
-                    getStringClaim(claims, "nonce"),
+                    claims.getStringClaim("nickname"),
+                    claims.getStringClaim("nonce"),
                     claims.getExpirationTime().toInstant());
 
         } catch (ParseException | JOSEException e) {
@@ -86,7 +72,7 @@ public class KakaoOidcUtil {
 
         try {
             // JWKS JSON 가져오기
-            JWKSet jwkSet = JWKSet.load(URI.create(jwksUri).toURL());
+            JWKSet jwkSet = JWKSet.load(URI.create(kakaoOidcJwksUri).toURL());
             JWK jwk = jwkSet.getKeyByKeyId(keyId);
 
             if (jwk == null) {
@@ -101,36 +87,6 @@ public class KakaoOidcUtil {
 
         } catch (Exception e) {
             throw new RuntimeException("JWKS 불러오기 또는 파싱 실패", e);
-        }
-    }
-
-    /**
-     * 클레임 검증 (iss, aud, exp, nonce)
-     */
-    private void validateClaims(JWTClaimsSet claims, String sessionNonce) throws ParseException {
-
-        // iss(발급자) 검증 - 프로퍼티 기반
-        if (!kakaoIssuer.equals(claims.getIssuer())) {
-            throw new RuntimeException("iss(발급자)가 일치하지 않습니다. [기대값=" + kakaoIssuer + "]");
-        }
-        // aud(클라이언트 ID) 검증 - 프로퍼티 기반
-        List<String> audience = claims.getAudience();
-        if (audience == null || !audience.contains(kakaoClientId)) {
-            throw new RuntimeException("aud(클라이언트 ID)가 유효하지 않습니다. [기대값=" + kakaoClientId + "]");
-        }
-
-        // 만료시간(exp) 검증
-        Date expiration = claims.getExpirationTime();
-        if (expiration == null || expiration.toInstant().isBefore(Instant.now())) {
-            throw new RuntimeException("ID 토큰의 유효기간이 만료되었습니다.");
-        }
-
-        // nonce 검증 (선택적)
-        if (sessionNonce != null && !sessionNonce.isBlank()) {
-            String nonce = getStringClaim(claims, "nonce");
-            if (!sessionNonce.equals(nonce)) {
-                throw new RuntimeException("nonce 값이 일치하지 않습니다.");
-            }
         }
     }
 

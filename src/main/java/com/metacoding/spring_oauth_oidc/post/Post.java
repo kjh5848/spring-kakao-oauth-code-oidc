@@ -1,8 +1,8 @@
-package com.metacoding.spring_oauth.post;
+package com.metacoding.spring_oauth_oidc.post;
 
 import java.time.LocalDateTime;
 
-import com.metacoding.spring_oauth.user.User;
+import com.metacoding.spring_oauth_oidc.user.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,7 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +20,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "post_tb")
@@ -45,4 +44,3 @@ public class Post {
     private LocalDateTime createdAt;
 
 }
-

@@ -1,4 +1,4 @@
-package com.metacoding.spring_oauth.user;
+package com.metacoding.spring_oauth_oidc.user;
 
 import java.util.Optional;
 
