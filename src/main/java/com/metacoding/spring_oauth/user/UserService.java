@@ -69,8 +69,7 @@ public class UserService {
      * client_id%3D200429b30f3909ea3fd28224cddc7b25%26
      * redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A8080%252Foauth%252Fcallback%26
      * scope%3Dopenid%2520profile_nickname%26
-     * nonce%3Dkakao_nonce%26through_account%3Dtrue%26auth_tran_id%3DAcdlyMNwE_KbSQnixpr7JEeXuDsX7_E-OY78AjFqCg0gWgAAAZpcVMnf#login
-     * 
+     * nonce%3D803e2c8a-d8de-46a8-a041-de79d9239414%26through_account%3Dtrue%26auth_tran_id%3DB0cy56socnB3yeZ71vyeJHsf0Vz4fWvX7RipoW2PChcQbwAAAZpceK4-#login
      */
     public String 카카오로그인주소() {
 
