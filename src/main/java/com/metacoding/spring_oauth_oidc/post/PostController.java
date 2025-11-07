@@ -16,6 +16,6 @@ public class PostController {
 
     @GetMapping("/posts")
     public ResponseEntity<?> 목록조회() {
-        return Resp.ok(postService.게시글목록(), null);
+        return Resp.ok("게시글 목록 조회", postService.게시글목록());
     }
 }

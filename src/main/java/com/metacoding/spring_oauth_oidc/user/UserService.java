@@ -39,12 +39,13 @@ public class UserService {
      * 일반 로그인 - JWT 생성 후 반환
      */
     @Transactional
-    public String 로그인(UserRequest.LoginDTO reqDTO) {
+    public UserResponse.DTO 로그인(UserRequest.LoginDTO reqDTO) {
         User user = userRepository.findByUsernameAndPassword(reqDTO.username(), reqDTO.password())
                 .orElseThrow(() -> new RuntimeException("유효하지 않은 로그인 정보입니다."));
 
         // JWT 발급 (서비스 내부에서 처리)
-        return JwtUtil.create(user);
+        String jwt = JwtUtil.create(user);
+        return new UserResponse.DTO(user, jwt);
     }
 
     /**
@@ -85,7 +86,7 @@ public class UserService {
      * 카카오 로그인 (인가코드 방식)
      */
     @Transactional
-    public String 카카오로그인(String code) {
+    public UserResponse.DTO 카카오로그인(String code) {
         // 인가 코드로 토큰 요청 (access_token + id_token 포함)
         KakaoResponse.TokenDTO tokenDTO = kakaoApiClient.getKakaoToken(code, restTemplate);
         if (tokenDTO == null || tokenDTO.accessToken() == null) {
@@ -100,7 +101,8 @@ public class UserService {
 
         User user = 카카오사용자보장(resDTO.subject(), resDTO.nickname(), null);
 
-        return JwtUtil.create(user);
+        String jwt = JwtUtil.create(user);
+        return new UserResponse.DTO(user, jwt);
 
     }
 

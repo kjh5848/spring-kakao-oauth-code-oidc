@@ -21,8 +21,8 @@ public class UserController {
     // 일반 로그인 (JWT 발급 + 헤더 반환)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserRequest.LoginDTO loginDTO) {
-        String jwt = userService.로그인(loginDTO);
-        return Resp.ok("로그인 성공", jwt);
+        var resDTO = userService.로그인(loginDTO);
+        return Resp.ok("로그인 성공", resDTO);
     }
 
     // 회원가입
@@ -30,7 +30,7 @@ public class UserController {
     @ResponseBody
     public ResponseEntity<?> join(@RequestBody UserRequest.JoinDTO joinDTO) {
         var resDTO = userService.회원가입(joinDTO);
-        return Resp.ok(resDTO, null);
+        return Resp.ok("회원가입 성공", resDTO);
     }
 
     // 카카오 로그인 리다이렉트
@@ -46,8 +46,8 @@ public class UserController {
         if (code == null || code.isBlank()) {
             return ResponseEntity.badRequest().body(new Resp<>(400, "인가 코드가 없습니다.", null));
         }
-        var jwt = userService.카카오로그인(code);
-        return Resp.ok("카카오 로그인 성공", jwt);
+        var resDTO = userService.카카오로그인(code);
+        return Resp.ok("카카오 로그인 성공", resDTO);
     }
 
     @GetMapping("/logout")
