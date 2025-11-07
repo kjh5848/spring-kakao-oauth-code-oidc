@@ -22,12 +22,12 @@ import com.nimbusds.jwt.SignedJWT;
 public class KakaoOidcUtil {
 
     @Value("${kakao.issuer}")
-    private String kakaoApiIssuer;
+    private String kakaoIssuer;
 
     @Value("${kakao.client-id}")
-    private String kakaoApiClientId;
+    private String kakaoClientId;
 
-    @Value("${kakao.oidc-jwks-uri:https://kauth.kakao.com/.well-known/jwks.json}")
+    @Value("${kakao.oidc-jwks-uri}")
     private String jwksUri;
 
     /**
@@ -110,13 +110,13 @@ public class KakaoOidcUtil {
     private void validateClaims(JWTClaimsSet claims, String sessionNonce) throws ParseException {
 
         // iss(발급자) 검증 - 프로퍼티 기반
-        if (!kakaoApiIssuer.equals(claims.getIssuer())) {
-            throw new RuntimeException("iss(발급자)가 일치하지 않습니다. [기대값=" + kakaoApiIssuer + "]");
+        if (!kakaoIssuer.equals(claims.getIssuer())) {
+            throw new RuntimeException("iss(발급자)가 일치하지 않습니다. [기대값=" + kakaoIssuer + "]");
         }
         // aud(클라이언트 ID) 검증 - 프로퍼티 기반
         List<String> audience = claims.getAudience();
-        if (audience == null || !audience.contains(kakaoApiClientId)) {
-            throw new RuntimeException("aud(클라이언트 ID)가 유효하지 않습니다. [기대값=" + kakaoApiClientId + "]");
+        if (audience == null || !audience.contains(kakaoClientId)) {
+            throw new RuntimeException("aud(클라이언트 ID)가 유효하지 않습니다. [기대값=" + kakaoClientId + "]");
         }
 
         // 만료시간(exp) 검증

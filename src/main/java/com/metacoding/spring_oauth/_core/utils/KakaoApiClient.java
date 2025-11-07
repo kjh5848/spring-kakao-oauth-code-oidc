@@ -13,16 +13,16 @@ import org.springframework.web.client.RestTemplate;
 import com.metacoding.spring_oauth.user.KakaoResponse;
 
 @Component
-public class KakaoToken {
+public class KakaoApiClient {
 
     @Value("${kakao.client-id}")
-    private String kakaoApiClientId;
+    private String kakaoClientId;
 
     @Value("${kakao.redirect-uri}")
-    private String kakaoApiRedirectUri;
+    private String kakaoRedirectUri;
 
     @Value("${kakao.client-secret:}")
-    private String kakaoApiClientSecret;
+    private String kakaoClientSecret;
 
     public KakaoResponse.TokenDTO getKakaoToken(String code, RestTemplate restTemplate) {
         HttpEntity<MultiValueMap<String, String>> request = createTokenRequest(code);
@@ -35,39 +35,20 @@ public class KakaoToken {
         return response.getBody();
     }
 
-    public KakaoResponse.KakaoUserDTO getKakaoUser(String accessToken, RestTemplate restTemplate) {
-        HttpEntity<MultiValueMap<String, String>> request = createUserRequest(accessToken);
-
-        ResponseEntity<KakaoResponse.KakaoUserDTO> response = restTemplate.exchange(
-                "https://kapi.kakao.com/v2/user/me",
-                HttpMethod.GET,
-                request,
-                KakaoResponse.KakaoUserDTO.class);
-        return response.getBody();
-    }
-
     private HttpEntity<MultiValueMap<String, String>> createTokenRequest(String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
-        body.add("client_id", kakaoApiClientId);
-        body.add("redirect_uri", kakaoApiRedirectUri);
+        body.add("client_id", kakaoClientId);
+        body.add("redirect_uri", kakaoRedirectUri);
         body.add("code", code);
-        if (kakaoApiClientSecret != null && !kakaoApiClientSecret.isBlank()) {
-            body.add("client_secret", kakaoApiClientSecret);
+        if (kakaoClientSecret != null && !kakaoClientSecret.isBlank()) {
+            body.add("client_secret", kakaoClientSecret);
         }
 
         return new HttpEntity<>(body, headers);
-    }
-
-    private HttpEntity<MultiValueMap<String, String>> createUserRequest(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-        headers.add("Authorization", "Bearer " + accessToken);
-
-        return new HttpEntity<>(headers);
     }
 
 }

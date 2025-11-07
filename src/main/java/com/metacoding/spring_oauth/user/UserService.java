@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import com.metacoding.spring_oauth._core.utils.JwtUtil;
+import com.metacoding.spring_oauth._core.utils.KakaoApiClient;
 import com.metacoding.spring_oauth._core.utils.KakaoOidcUtil;
-import com.metacoding.spring_oauth._core.utils.KakaoToken;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -24,18 +24,18 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final HttpSession session;
-    private final KakaoToken kakaoToken;
     private final KakaoOidcUtil kakaoOidcUtil;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final KakaoApiClient kakaoApiClient;
 
     @Value("${kakao.authorize-uri}")
-    private String kakaoApiAuthorizeUri;
+    private String kakaoAuthorizeUri;
 
     @Value("${kakao.client-id}")
-    private String kakaoApiClientId;
+    private String kakaoClientId;
 
     @Value("${kakao.redirect-uri}")
-    private String kakaoApiRedirectUri;
+    private String kakaoRedirectUri;
 
     /**
      * 일반 로그인 - JWT 생성 후 반환
@@ -77,11 +77,11 @@ public class UserService {
         String nonce = UUID.randomUUID().toString();
         session.setAttribute("kakao_nonce", nonce); // 서버 세션에 저장
 
-        String encodedRedirect = URLEncoder.encode(kakaoApiRedirectUri, StandardCharsets.UTF_8);
+        String encodedRedirect = URLEncoder.encode(kakaoRedirectUri, StandardCharsets.UTF_8);
         String scope = URLEncoder.encode("openid profile_nickname", StandardCharsets.UTF_8);
-        return kakaoApiAuthorizeUri
+        return kakaoAuthorizeUri
                 + "?response_type=code"
-                + "&client_id=" + kakaoApiClientId
+                + "&client_id=" + kakaoClientId
                 + "&redirect_uri=" + encodedRedirect
                 + "&scope=" + scope
                 + "&nonce=" + nonce;
@@ -93,7 +93,7 @@ public class UserService {
     @Transactional
     public String 카카오로그인(String code) {
         // 인가 코드로 토큰 요청 (access_token + id_token 포함)
-        KakaoResponse.TokenDTO tokenDTO = kakaoToken.getKakaoToken(code, restTemplate);
+        KakaoResponse.TokenDTO tokenDTO = kakaoApiClient.getKakaoToken(code, restTemplate);
         if (tokenDTO == null || tokenDTO.accessToken() == null) {
             throw new RuntimeException("카카오 Access Token 발급에 실패했습니다.");
         }
