@@ -76,23 +76,23 @@ public class UserService {
      * 카카오 유저 생성/갱신
      */
     @Transactional
-public User 카카오생성및갱신(String providerId, String username, String email) {
-    String resolvedEmail = "kakao_" + providerId + "@kakao.com";
-    String resolvedUsername = username;
+    public User 카카오생성및갱신(String providerId, String username, String email) {
+        String resolvedEmail = "kakao_" + providerId + "@kakao.com";
+        String resolvedUsername = username;
 
-    return userRepository.findByProviderAndProviderId("kakao", providerId)
-            .map(user -> {
-                user.updateEmail(resolvedEmail);
-                user.updateUsername(resolvedUsername);
-                return user;
-            })
-            .orElseGet(() -> userRepository.save(User.builder()
-                    .username(resolvedUsername)
-                    .password(UUID.randomUUID().toString())
-                    .email(resolvedEmail)
-                    .provider("kakao")
-                    .providerId(providerId)
-                    .build()));
-}
+        return userRepository.findByProviderAndProviderId("kakao", providerId)
+                .map(user -> {
+                    user.updateEmail(resolvedEmail);
+                    user.updateUsername(resolvedUsername);
+                    return user;
+                })
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .username(resolvedUsername)
+                        .password(UUID.randomUUID().toString())
+                        .email(resolvedEmail)
+                        .provider("kakao")
+                        .providerId(providerId)
+                        .build()));
+    }
 
 }
