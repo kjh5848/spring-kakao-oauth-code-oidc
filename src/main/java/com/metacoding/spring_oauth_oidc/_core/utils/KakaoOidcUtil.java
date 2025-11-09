@@ -54,7 +54,6 @@ public class KakaoOidcUtil {
             return new KakaoOidcResponse(
                     claims.getSubject(),
                     claims.getStringClaim("nickname"),
-                    claims.getStringClaim("nonce"),
                     claims.getExpirationTime().toInstant());
 
         } catch (ParseException | JOSEException e) {

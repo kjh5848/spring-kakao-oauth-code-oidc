@@ -2,7 +2,6 @@ package com.metacoding.spring_oauth_oidc.user;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -36,37 +35,11 @@ public class UserService {
     private String kakaoRedirectUri;
 
     /**
-     * 일반 로그인 - JWT 생성 후 반환
-     */
-    @Transactional
-    public UserResponse.DTO 로그인(UserRequest.LoginDTO reqDTO) {
-        User user = userRepository.findByUsernameAndPassword(reqDTO.username(), reqDTO.password())
-                .orElseThrow(() -> new RuntimeException("유효하지 않은 로그인 정보입니다."));
-
-        // JWT 발급 (서비스 내부에서 처리)
-        String jwt = JwtUtil.create(user);
-        return new UserResponse.DTO(user, jwt);
-    }
-
-    /**
-     * 회원가입 - 저장 후 JWT 생성
-     */
-    @Transactional
-    public UserResponse.DTO 회원가입(UserRequest.JoinDTO reqDTO) {
-        Optional<User> userOP = userRepository.findByUsername(reqDTO.username());
-        if (userOP.isPresent()) {
-            throw new RuntimeException("이미 사용 중인 유저네임입니다.");
-        }
-
-        User user = userRepository.save(reqDTO.toEntity());
-        return new UserResponse.DTO(user);
-    }
-
-    /**
      * 카카오 로그인 URL 생성
      * 
      * 예시)
-     * https://accounts.kakao.com/login/?continue=https%3A%2F%2Fkauth.kakao.com%2Foauth%2Fauthorize%3Fresponse_type%3Dcode%26
+     * https://accounts.kakao.com/login/?continue=https%3A%2F%2Fkauth.kakao.com%2Foauth%2Fauthorize%3F
+     * response_type%3Dcode%26
      * client_id%3D200429b30f3909ea3fd28224cddc7b25%26
      * redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A8080%252Foauth%252Fcallback%26
      * scope%3Dopenid%2520profile_nickname%26
@@ -89,47 +62,37 @@ public class UserService {
     public UserResponse.DTO 카카오로그인(String code) {
         // 인가 코드로 토큰 요청 (access_token + id_token 포함)
         KakaoResponse.TokenDTO tokenDTO = kakaoApiClient.getKakaoToken(code, restTemplate);
-        if (tokenDTO == null || tokenDTO.accessToken() == null) {
-            throw new RuntimeException("카카오 Access Token 발급에 실패했습니다.");
-        }
 
         // OIDC 검증
         KakaoOidcResponse resDTO = kakaoOidcUtil.verify(tokenDTO.idToken());
-        if (resDTO == null || resDTO.subject() == null) {
-            throw new RuntimeException("카카오 OIDC id_token 검증 실패");
-        }
 
-        User user = 카카오사용자보장(resDTO.subject(), resDTO.nickname(), null);
+        User user = 카카오생성및갱신(resDTO.subject(), resDTO.nickname(), null);
 
         String jwt = JwtUtil.create(user);
         return new UserResponse.DTO(user, jwt);
-
     }
 
     /**
      * 카카오 유저 생성/갱신
      */
     @Transactional
-    public User 카카오사용자보장(String providerId, String preferredUsername, String email) {
-        String resolvedEmail = (email != null && !email.isBlank())
-                ? email
-                : "kakao_" + providerId + "@kakao.local";
-        String resolvedUsername = (preferredUsername != null && !preferredUsername.isBlank())
-                ? preferredUsername
-                : "kakao_" + providerId;
+public User 카카오생성및갱신(String providerId, String username, String email) {
+    String resolvedEmail = "kakao_" + providerId + "@kakao.com";
+    String resolvedUsername = username;
 
-        return userRepository.findByProviderAndProviderId("kakao", providerId)
-                .map(user -> {
-                    user.updateEmail(resolvedEmail);
-                    user.updateUsername(resolvedUsername);
-                    return user;
-                })
-                .orElseGet(() -> userRepository.save(User.builder()
-                        .username(resolvedUsername)
-                        .password(UUID.randomUUID().toString())
-                        .email(resolvedEmail)
-                        .provider("kakao")
-                        .providerId(providerId)
-                        .build()));
-    }
+    return userRepository.findByProviderAndProviderId("kakao", providerId)
+            .map(user -> {
+                user.updateEmail(resolvedEmail);
+                user.updateUsername(resolvedUsername);
+                return user;
+            })
+            .orElseGet(() -> userRepository.save(User.builder()
+                    .username(resolvedUsername)
+                    .password(UUID.randomUUID().toString())
+                    .email(resolvedEmail)
+                    .provider("kakao")
+                    .providerId(providerId)
+                    .build()));
+}
+
 }

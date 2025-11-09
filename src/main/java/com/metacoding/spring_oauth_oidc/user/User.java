@@ -44,23 +44,10 @@ public class User {
     private LocalDateTime createdAt;
 
     public void updateEmail(String newEmail) {
-        if (newEmail != null && !newEmail.isBlank() && !newEmail.equals(this.email)) {
             this.email = newEmail;
-        }
     }
 
     public void updateUsername(String newUsername) {
-        if (newUsername != null && !newUsername.isBlank() && !newUsername.equals(this.username)) {
             this.username = newUsername;
-        }
-    }
-
-    public void updateProviderInfo(String provider, String providerId) {
-        if (provider != null && !provider.isBlank()) {
-            this.provider = provider;
-        }
-        if (providerId != null && !providerId.isBlank()) {
-            this.providerId = providerId;
-        }
     }
 }
